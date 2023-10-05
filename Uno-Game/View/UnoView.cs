@@ -6,7 +6,7 @@ namespace Uno_Game
     {
 
         static UnoModel model = new UnoModel();
-        static List<string> center = new List<string>();
+
         static Players player = new Players();
 
 
@@ -56,6 +56,7 @@ namespace Uno_Game
             }
         }
 
+
         static void Start()
         {
             player.Reset = 0;
@@ -63,41 +64,51 @@ namespace Uno_Game
             Console.WriteLine(players[startingPlayer].Name + " beginnt!");
             Thread.Sleep(2000);
             Console.Clear();
-
-            List<string> colors = new List<string> { "Red", "Green", "Blue", "Yellow" };
-            List<string> values = Enumerable.Range(0, 10).Select(i => i.ToString())
-                .Concat(new string[] { "Skip", "+2", "Reverse" }).ToList();
-            List<string> specialCards = new List<string> { "Wild ", "Draw 4" };
-
-            List<string> deck = model.GenerateDeck(colors, values, specialCards);
-            model.ShuffleDeck(deck);
-
+            
+            List<string> deck = model.Shuffle();
 
             foreach (Players player in players)
             {
                 player.Hand = model.DealCards(deck, 7);
             }
 
-            string firstCard = model.PlaceFirstCardInCenter(deck, center);
+            string firstCard = model.PlaceFirstCardInCenter(deck);
 
             while (true)
             {
+                
+                
+                
                 if (player.Reset == 0)
                 {
-                    for (player.I = startingPlayer; player.I <= 3; player.I++)
+                    player.I = startingPlayer;
+                    if (player.Test == 1)
+                    {
+                        player.I = player.NextPlayer;
+                        player.Test = 0;
+                    }
+                    for (player.I = player.I; player.I <= 3; player.I++)
                     {
                         Game();
                     }
-
                     startingPlayer = 0;
                 }
+                
+                
+                
                 else if (player.Reset == 1)
                 {
-                    for (player.I = startingPlayer; player.I >= 0; player.I--)
+                    player.I = startingPlayer;
+                    if (player.Test == 1)
+                    {
+                        player.I = player.NextPlayer;
+                        player.Test = 0;
+                    }
+                    for (player.I = player.I; player.I >= 0; player.I--)
                     {
                         Game();
-                    }
 
+                    }
                     startingPlayer = 3;
                 }
             }
@@ -111,17 +122,17 @@ namespace Uno_Game
                 Console.WriteLine(", du bist dran.");
                 Console.ResetColor();
 
-                if (center.Count > 0)
+                if (player.Center.Count > 0)
                 {
                     ConsoleColor consoleColor;
-                    string[] centerCardColor = center.Last().Split(' ');
+                    string[] centerCardColor = player.Center.Last().Split(' ');
 
                     if (Enum.TryParse(centerCardColor[0], true, out consoleColor))
                     {
                         Console.ForegroundColor = ConsoleColor.DarkGray;
                         Console.Write("Karte auf dem Ablagestapel: ");
                         Console.ForegroundColor = consoleColor;
-                        Console.WriteLine(center.Last());
+                        Console.WriteLine(player.Center.Last());
                         Console.ResetColor();
                     }
                     else
@@ -198,7 +209,7 @@ namespace Uno_Game
 
                         
                         
-                        if (model.IsCardPlayable(selectedCard, center))
+                        if (model.IsCardPlayable(selectedCard))
                         {
                             if (model.IsTwoPlus(selectedCard))
                             {
@@ -232,7 +243,15 @@ namespace Uno_Game
 
                             if (model.IsSkip(selectedCard))
                             {
-                                int nextPlayerIndex = (player.I + 1) % players.Count;
+                                int nextPlayerIndex = 0;
+                                if (player.Reset == 0)
+                                {
+                                    nextPlayerIndex = (player.I + 1) % players.Count;
+                                }
+                                else if (player.Reset == 1)
+                                {
+                                    nextPlayerIndex = (player.I - 1) % players.Count;
+                                }
                                 Console.WriteLine(players[nextPlayerIndex].Name + " wird übersprungen!");
                                 validCardPlayed = true;
                                 player.I = nextPlayerIndex;
@@ -242,16 +261,19 @@ namespace Uno_Game
 
                             if (model.IsReverse(selectedCard))
                             {
+                                player.Test = 1;
                                 if (player.Reset == 0)
                                 {
                                     player.Reset = 1;
-                                    player.I = (player.I - 1) % players.Count;
+                                    player.NextPlayer = (player.I - 1) % players.Count;
+                                    player.I = 3;
                                     //player.I = 3;
                                 }
                                 else if (player.Reset == 1)
                                 {
                                     player.Reset = 0;
-                                    player.I = (player.I + 1) % players.Count;
+                                    player.NextPlayer = (player.I + 1) % players.Count;
+                                    player.I = 0;
                                     //player.I = 0;
                                 }
                                 else
@@ -312,8 +334,8 @@ namespace Uno_Game
                                     Enter();
                                 }
                             }
-
-                            center.Add(selectedCard);
+                            
+                            player.Center.Add(selectedCard);
                             players[player.P].Hand.RemoveAt(cardIndex);
                             Console.WriteLine(players[player.P].Name + " hat " + selectedCard + " gespielt.");
                             validCardPlayed = true;

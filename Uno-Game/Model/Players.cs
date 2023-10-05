@@ -8,7 +8,10 @@ public class Players
     public int Reset { get; set; }
     public int I { get; set; }
     public int P { get; set; }
+    public int Test { get; set; }
+    public int NextPlayer { get; set; }
     public List<string> Hand { get; set; }
+    public List<string> Center { get; set; }
 
     public Players()
     {

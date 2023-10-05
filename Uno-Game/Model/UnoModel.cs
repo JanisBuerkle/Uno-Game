@@ -2,14 +2,6 @@
 {
     public class UnoModel
     {
-        
-        
-        
-        
-        
-        
-        
-        
         static Random random = new Random();
         static Players player = new Players();
         public int ChooseStartingPlayer()
@@ -35,7 +27,7 @@
 
             foreach (string specialCard in specialCards)
             {
-                for (int i = 0; player.I < 4; player.I++)
+                for (; player.I < 4; player.I++)
                 {
                     deck.Add(specialCard);
                 }
@@ -103,31 +95,37 @@
             }
         }
 
-        public string PlaceFirstCardInCenter(List<string> deck, List<string> center)
+        public string PlaceFirstCardInCenter(List<string> deck)
         {
             int randomCard = random.Next(deck.Count);
             string selectedCard = deck[randomCard];
             deck.RemoveAt(randomCard);
-            center.Add(selectedCard);
+            player.Center.Add(selectedCard);
 
             return selectedCard;
         }
-
+        public List<string> Shuffle()
+        {
+            ShuffleDeck(player.Center);
+            return player.Center;
+        }
         public string DrawCard(List<string> deck)
         {
             if (deck.Count == 0)
             {
-                ShuffleDeck(deck);
+                Console.WriteLine("LEEEEEEEEEEEEEEEEEEEEEEEEEEEERRRRRRRRRRRRRRRRRRR");
+                Shuffle();
             }
 
+            deck = Shuffle();
             var card = deck.First();
             deck.RemoveAt(0);
             return card;
         }
 
-        public bool IsCardPlayable(string selectedCard, List<string> center)
+        public bool IsCardPlayable(string selectedCard)
         {
-            if (center.Count == 0)
+            if (player.Center.Count == 0)
             {
                 return true;
             }
@@ -141,7 +139,7 @@
             string selectedColor = selectedCardParts[0];
             string selectedValue = selectedCardParts[1];
 
-            string centerCard = center.LastOrDefault();
+            string centerCard = player.Center.LastOrDefault();
             if (centerCard == null)
             {
                 return false;
@@ -196,8 +194,8 @@
 
         public bool IsValidColor(string color)
         {
-            List<string> validColors = new List<string> { "Red", "Green", "Blue", "Yellow" };
-            return validColors.Contains(color);
+            List<string> validColors = new List<string> { "red", "green", "blue", "yellow" };
+            return validColors.Contains(color.ToLower());
         }
         
     }
