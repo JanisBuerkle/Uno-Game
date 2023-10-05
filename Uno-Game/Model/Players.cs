@@ -7,6 +7,7 @@ public class Players
     public int Anzahl { get; set; }
     public int Reset { get; set; }
     public int I { get; set; }
+    public int P { get; set; }
     public List<string> Hand { get; set; }
 
     public Players()

@@ -1,12 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Uno_Game
+﻿namespace Uno_Game
 {
-    internal class Controller
+    public class UnoController
     {
+        private UnoModel model;
+        private UnoView view;
+
+        public UnoController(UnoModel model, UnoView view)
+        {
+            this.model = model;
+            this.view = view;
+        }
+
+        public void Run()
+        {
+            view.StartGame();
+        }
     }
 }
