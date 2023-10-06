@@ -292,7 +292,23 @@ namespace Uno_Game
                             {
                                 string cards = selectedCard;
                                 Console.WriteLine("Welche Farbe möchtest du wählen (Red, Green, Blue, Yellow)?");
-                                string chosenColor = Console.ReadLine();
+                                string colorInput = Console.ReadLine();
+                                string chosenColor = "";
+                                switch (colorInput.ToLower())
+                                {
+                                    case "red":
+                                        chosenColor = "Red";
+                                        break;
+                                    case "green":
+                                        chosenColor = "Green";
+                                        break;
+                                    case "blue":
+                                        chosenColor = "Blue";
+                                        break;
+                                    case "yellow":
+                                        chosenColor = "Yellow";
+                                        break;
+                                }
                                 if (model.IsValidColor(chosenColor) && cards.Contains("Draw 4"))
                                 {
                                     selectedCard = chosenColor + " " + "+4";

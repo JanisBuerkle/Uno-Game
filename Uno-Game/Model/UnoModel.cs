@@ -109,42 +109,49 @@
         {
             if (deck.Count == 0)
             {
-                ShuffleDeck(deck);
-                Console.WriteLine("Stapel ist Leer");
-                Console.WriteLine(center[0]);
-                
-                int number = center.Count;
-                while (number > 1)
+                if (center.Count > 1)
                 {
-                    number--;
-                    int carde = random.Next(number + 1);
-                    string value = center[carde];
-                    center[carde] = center[number];
-                    center[number] = value;
-                }
+                    ShuffleDeck(deck);
+                    Console.WriteLine("Stapel ist Leer wird neu gemischt...");
+                    Thread.Sleep(2000);
+                    Console.WriteLine(center[0]);
                 
-                int i = 1;
-                while (i < center.Count)
-                {
-                    deck.Add(center[i]);
-                    i++;
-                }
+                    int number = center.Count;
+                    string first = center[0];
+                    while (number > 1)
+                    {
+                        number--;
+                        int carde = random.Next(number + 1);
+                        string value = center[carde];
+                        center[carde] = center[number];
+                        center[number] = value;
+                    }
+                
+                    int i = 1;
+                    while (i < center.Count)
+                    {
+                        deck.Add(center[i]);
+                        i++;
+                    }
 
-                string first = center[0];
-                center.Clear();
-                center.Add(first);
-                
-                
-                i = 0;
-                while (i < center.Count)
-                {
-                    Console.WriteLine(center[i]);
-                    i++;
-                }
 
+                    center.Clear();
+                    center.Add(first);
                 
+                
+                    i = 0;
+                    while (i < center.Count)
+                    {
+                        Console.WriteLine(center[i]);
+                        i++;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Stapel ist Leer und es liegen keine Karten mehr die man mischen kann.");
+                    Console.WriteLine("Ihr habt alle auf der Hand spielt mit diesen!");
+                }
             }
-
             var card = deck.First();
             deck.RemoveAt(0);
             return card;
@@ -224,6 +231,5 @@
             List<string> validColors = new List<string> { "Red", "Green", "Blue", "Yellow" };
             return validColors.Contains(color);
         }
-        
     }
 }
