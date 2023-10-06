@@ -95,37 +95,64 @@
             }
         }
 
-        public string PlaceFirstCardInCenter(List<string> deck)
+        public string PlaceFirstCardInCenter(List<string> deck, List<string> center)
         {
             int randomCard = random.Next(deck.Count);
             string selectedCard = deck[randomCard];
             deck.RemoveAt(randomCard);
-            player.Center.Add(selectedCard);
+            center.Add(selectedCard);
 
             return selectedCard;
         }
-        public List<string> Shuffle()
-        {
-            ShuffleDeck(player.Center);
-            return player.Center;
-        }
-        public string DrawCard(List<string> deck)
+
+        public string DrawCard(List<string> deck, List<string> center)
         {
             if (deck.Count == 0)
             {
-                Console.WriteLine("LEEEEEEEEEEEEEEEEEEEEEEEEEEEERRRRRRRRRRRRRRRRRRR");
-                Shuffle();
+                ShuffleDeck(deck);
+                Console.WriteLine("Stapel ist Leer");
+                Console.WriteLine(center[0]);
+                
+                int number = center.Count;
+                while (number > 1)
+                {
+                    number--;
+                    int carde = random.Next(number + 1);
+                    string value = center[carde];
+                    center[carde] = center[number];
+                    center[number] = value;
+                }
+                
+                int i = 1;
+                while (i < center.Count)
+                {
+                    deck.Add(center[i]);
+                    i++;
+                }
+
+                string first = center[0];
+                center.Clear();
+                center.Add(first);
+                
+                
+                i = 0;
+                while (i < center.Count)
+                {
+                    Console.WriteLine(center[i]);
+                    i++;
+                }
+
+                
             }
 
-            deck = Shuffle();
             var card = deck.First();
             deck.RemoveAt(0);
             return card;
         }
 
-        public bool IsCardPlayable(string selectedCard)
+        public bool IsCardPlayable(string selectedCard, List<string> center)
         {
-            if (player.Center.Count == 0)
+            if (center.Count == 0)
             {
                 return true;
             }
@@ -139,7 +166,7 @@
             string selectedColor = selectedCardParts[0];
             string selectedValue = selectedCardParts[1];
 
-            string centerCard = player.Center.LastOrDefault();
+            string centerCard = center.LastOrDefault();
             if (centerCard == null)
             {
                 return false;
@@ -194,8 +221,8 @@
 
         public bool IsValidColor(string color)
         {
-            List<string> validColors = new List<string> { "red", "green", "blue", "yellow" };
-            return validColors.Contains(color.ToLower());
+            List<string> validColors = new List<string> { "Red", "Green", "Blue", "Yellow" };
+            return validColors.Contains(color);
         }
         
     }

@@ -11,7 +11,6 @@ public class Players
     public int Test { get; set; }
     public int NextPlayer { get; set; }
     public List<string> Hand { get; set; }
-    public List<string> Center { get; set; }
 
     public Players()
     {
