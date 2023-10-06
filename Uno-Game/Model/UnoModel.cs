@@ -149,14 +149,13 @@
                 else
                 {
                     Console.WriteLine("Stapel ist Leer und es liegen keine Karten mehr die man mischen kann.");
-                    Console.WriteLine("Ihr habt alle auf der Hand spielt mit diesen!");
+                    Console.WriteLine("Ihr habt alle Karten auf der Hand spielt mit diesen!");
                 }
             }
             var card = deck.First();
             deck.RemoveAt(0);
             return card;
         }
-
         public bool IsCardPlayable(string selectedCard, List<string> center)
         {
             if (center.Count == 0)
