@@ -2,7 +2,7 @@
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             UnoModel model = new UnoModel();
             UnoView view = new UnoView();

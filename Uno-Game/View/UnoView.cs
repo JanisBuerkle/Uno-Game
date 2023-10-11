@@ -1,16 +1,11 @@
-﻿using System;
-
-namespace Uno_Game
+﻿namespace Uno_Game
 {
     public class UnoView
     {
-
-        static UnoModel model = new UnoModel();
-        static List<string> center = new List<string>();
-        static Players player = new Players();
-
-
-        static List<Players> players = new List<Players>() {};
+        static UnoModel model;
+        static List<string> center;
+        static Players player;
+        static List<Players> players;
 
         public void StartGame()
         {
@@ -32,10 +27,7 @@ namespace Uno_Game
                 {
                     Console.WriteLine("Ungültig. Bitte gebe eine Zahl zwischen 2-5 ein!");
                 }
-
             }
-
-
             for (int playerNumb = 0; playerNumb < player.CountOfPlayers; playerNumb++)
             {
                 Console.WriteLine("Gebt den Namen ein:");
@@ -45,7 +37,6 @@ namespace Uno_Game
                     Name = player,
                 });
             }
-
             Console.WriteLine("Da wir dies nun haben fangen wir doch direkt an!");
             Console.WriteLine("Kennt ihr alle die Regeln? (y/n)");
 
@@ -84,16 +75,12 @@ namespace Uno_Game
             List<string> values = Enumerable.Range(0, 10).Select(i => i.ToString())
                 .Concat(new string[] { "Skip", "+2", "Reverse" }).ToList();
             List<string> specialCards = new List<string> { "Wild ", "Draw 4" };
-
             List<string> deck = model.GenerateDeck(colors, values, specialCards);
             model.ShuffleDeck(deck);
-
-
             foreach (Players player in players)
             {
                 player.Hand = model.DealCards(deck, 7);
             }
-
             string firstCard = model.PlaceFirstCardInCenter(deck, center);
 
             while (true)
@@ -112,9 +99,6 @@ namespace Uno_Game
                     }
                     startingPlayer = 0;
                 }
-                
-                
-                
                 else if (player.Reset == 1)
                 {
                     player.Player = startingPlayer;
@@ -130,7 +114,6 @@ namespace Uno_Game
                     startingPlayer = player.CountOfPlayers - 1;
                 }
             }
-
             void Game()
             {
                 Console.Write("Nächster Spieler: ");
@@ -146,8 +129,6 @@ namespace Uno_Game
                     Console.WriteLine(players[next].Name);
 
                 };
-                
-                
                 Console.Write(players[player.Player].Name);
                 player.PlayerSave = player.Player;
                 Console.ResetColor();
@@ -179,22 +160,17 @@ namespace Uno_Game
                     Console.WriteLine("Der Ablagestapel ist noch leer.");
                     Console.ResetColor();
                 }
-
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Deine Karten:");
                 Console.ResetColor();
                 model.PrintHand(players[player.Player].Hand);
-
                 bool validCardPlayed = false;
-
                 while (!validCardPlayed)
                 {
                     Console.ForegroundColor = ConsoleColor.DarkGray;
                     Console.WriteLine("Wähle eine Karte zum Spielen oder drücke Enter um eine Karte zu ziehen:");
                     Console.ResetColor();
-
                     string input = Console.ReadLine();
-
 
                     if (string.IsNullOrWhiteSpace(input))
                     {
@@ -229,18 +205,13 @@ namespace Uno_Game
                             Console.ForegroundColor = ConsoleColor.Red;
                             Console.WriteLine("ALARM!!! ALARM!!");
                         }
-
-
                         validCardPlayed = true;
                         Enter();
                     }
-                    else if (int.TryParse(input, out int cardIndex) && cardIndex >= 0 &&
-                             cardIndex < players[player.Player].Hand.Count)
+                    else if (int.TryParse(input, out int cardIndex) && cardIndex >= 0 && cardIndex < players[player.Player].Hand.Count)
                     {
                         string selectedCard = players[player.Player].Hand[cardIndex];
 
-                        
-                        
                         if (model.IsCardPlayable(selectedCard, center))
                         {
                             if (model.IsTwoPlus(selectedCard))
@@ -269,8 +240,6 @@ namespace Uno_Game
                                     }
                                 }
                             }
-
-
                             if (model.IsSkip(selectedCard))
                             {
                                 int nextPlayerIndex = 0;
@@ -286,8 +255,6 @@ namespace Uno_Game
                                 validCardPlayed = true;
                                 player.Player = nextPlayerIndex;
                             }
-
-
                             if (model.IsReverse(selectedCard))
                             {
                                 player.ReverseCardPlayed = 1;
@@ -296,25 +263,20 @@ namespace Uno_Game
                                     player.Reset = 1;
                                     player.NextPlayer = (player.Player - 1) % players.Count;
                                     player.Player = player.CountOfPlayers - 1;
-
-                                    
                                 }
                                 else if (player.Reset == 1)
                                 {
                                     player.Reset = 0;
                                     player.NextPlayer = (player.Player + 1) % players.Count;
                                     player.Player = 0;
-
                                 }
                                 else
                                 {
                                     Console.WriteLine("FEHLER");
                                 }
-
                                 Console.WriteLine("Richtung wurde geändert!");
                                 validCardPlayed = true;
                             }
-
                             if (model.IsWildcard(selectedCard))
                             {
                                 string cards = selectedCard;
@@ -349,7 +311,6 @@ namespace Uno_Game
                                     Console.WriteLine("Ungültige Farbwahl. Die Karte wurde nicht gespielt.");
                                     continue;
                                 }
-
                                 if (cards.Contains("Draw 4"))
                                 {
                                     int number = 0;
@@ -377,7 +338,6 @@ namespace Uno_Game
                                     Enter();
                                 }
                             }
-                            
                             center.Add(selectedCard);
                             players[player.PlayerSave].Hand.RemoveAt(cardIndex);
                             Console.WriteLine(players[player.PlayerSave].Name + " hat " + selectedCard + " gespielt.");
@@ -396,23 +356,19 @@ namespace Uno_Game
                             "Ungültige Eingabe. Du musst einen gültigen Index eingeben oder Enter drücken.");
                     }
                 }
-
                 if (players[player.Player].Hand.Count == 1)
                 {
                     Console.WriteLine(players[player.Player].Name + " ruft UNO!");
                 }
-
                 if (players[player.Player].Hand.Count == 0)
                 {
                     Console.WriteLine(players[player.Player].Name + " hat gewonnen!");
                     return;
                 }
-
                 Thread.Sleep(100);
                 Console.Clear();
             }
         }
-
         static void Enter()
         {
             Console.ForegroundColor = ConsoleColor.DarkGray;
@@ -424,7 +380,6 @@ namespace Uno_Game
             Console.ResetColor();
             Console.ReadLine();
         }
-
         public void Rules()
         {
             Console.Clear();

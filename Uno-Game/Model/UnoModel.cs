@@ -2,13 +2,12 @@
 {
     public class UnoModel
     {
-        static Random random = new Random();
-        static Players player = new Players();
+        static Random random;
+        static Players player;
         public int ChooseStartingPlayer()
         {
             return random.Next(0, player.CountOfPlayers);
         }
-        
         public List<string> GenerateDeck(List<string> colors, List<string> values, List<string> specialCards)
         {
             List<string> deck = new List<string>();
@@ -24,7 +23,6 @@
                     }
                 }
             }
-
             foreach (string specialCard in specialCards)
             {
                 for (; player.Player < player.CountOfPlayers; player.Player++)
@@ -32,10 +30,8 @@
                     deck.Add(specialCard);
                 }
             }
-
             return deck;
         }
-        
         public void ShuffleDeck(List<string> deck)
         {
             int number = deck.Count;
@@ -57,10 +53,8 @@
                 deck.RemoveAt(0);
                 hand.Add(card);
             }
-
             return hand;
         }
-
         public void PrintHand(List<string> hand)
         {
             double nummer = -1;
@@ -89,7 +83,6 @@
                 }
             }
         }
-
         public string PlaceFirstCardInCenter(List<string> deck, List<string> center)
         {
             int randomCard = random.Next(deck.Count);
@@ -99,7 +92,6 @@
 
             return selectedCard;
         }
-
         public string DrawCard(List<string> deck, List<string> center)
         {
             if (deck.Count == 0)
@@ -121,18 +113,14 @@
                         center[carde] = center[number];
                         center[number] = value;
                     }
-                
                     int i = 1;
                     while (i < center.Count)
                     {
                         deck.Add(center[i]);
                         i++;
                     }
-
-
                     center.Clear();
                     center.Add(first);
-                
                 
                     i = 0;
                     while (i < center.Count)
@@ -198,10 +186,8 @@
             {
                 return true;
             }
-
             return false;
         }
-
         public bool IsTwoPlus(string card)
         {
             return card.Contains("+2");
@@ -211,17 +197,14 @@
         {
             return card.Contains("Skip");
         }
-
         public bool IsReverse(string card)
         {
             return card.Contains("Reverse");
         }
-
         public bool IsWildcard(string card)
         {
             return card.Contains("Wild") || card.Contains("Draw 4");
         }
-
         public bool IsValidColor(string color)
         {
             List<string> validColors = new List<string> { "red", "green", "blue", "yellow" };
