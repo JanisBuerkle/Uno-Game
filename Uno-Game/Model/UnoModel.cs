@@ -6,7 +6,7 @@
         static Players player = new Players();
         public int ChooseStartingPlayer()
         {
-            return random.Next(0, 4);
+            return random.Next(0, player.CountOfPlayers);
         }
         
         public List<string> GenerateDeck(List<string> colors, List<string> values, List<string> specialCards)
@@ -27,7 +27,7 @@
 
             foreach (string specialCard in specialCards)
             {
-                for (; player.I < 4; player.I++)
+                for (; player.Player < player.CountOfPlayers; player.Player++)
                 {
                     deck.Add(specialCard);
                 }
@@ -51,7 +51,7 @@
         public List<string> DealCards(List<string> deck, int handSize)
         {
             List<string> hand = new List<string>();
-            for (player.I = 0; player.I < handSize; player.I++)
+            for (player.Player = 0; player.Player < handSize; player.Player++)
             {
                 string card = deck.First();
                 deck.RemoveAt(0);

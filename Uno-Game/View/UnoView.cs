@@ -10,24 +10,40 @@ namespace Uno_Game
         static Players player = new Players();
 
 
-        static List<Players> players = new List<Players>()
-        {
-            new Players(),
-            new Players(),
-            new Players(),
-            new Players(),
-        };
+        static List<Players> players = new List<Players>() {};
 
         public void StartGame()
         {
             Console.WriteLine("Willkommen bei UNO!");
-            Console.WriteLine("Dieses Spiel ist für 4 Spieler.");
+            int i = 0;
+            while (i == 0)
+            {
+                Console.WriteLine("Mit wie vielen Spielern wollt ihr spielen?");
+                string CountOfPlayersEingabe = Console.ReadLine();
 
-            for (int playerNumb = 0; playerNumb < 4; playerNumb++)
+                int CountOfPlayersConvert;
+                if (int.TryParse(CountOfPlayersEingabe, out CountOfPlayersConvert))
+                {
+                    player.CountOfPlayers = CountOfPlayersConvert;
+                    Console.WriteLine("Anzahl der Spieler: " + player.CountOfPlayers);
+                    i = 1;
+                }
+                else
+                {
+                    Console.WriteLine("Ungültig. Bitte gebe eine Zahl zwischen 2-5 ein!");
+                }
+
+            }
+
+
+            for (int playerNumb = 0; playerNumb < player.CountOfPlayers; playerNumb++)
             {
                 Console.WriteLine("Gebt den Namen ein:");
                 string player = Console.ReadLine();
-                players[playerNumb].Name = player;
+                players.Add(new Players()
+                {
+                    Name = player,
+                });
             }
 
             Console.WriteLine("Da wir dies nun haben fangen wir doch direkt an!");
@@ -84,13 +100,13 @@ namespace Uno_Game
             {
                 if (player.Reset == 0)
                 {
-                    player.I = startingPlayer;
-                    if (player.Test == 1)
+                    player.Player = startingPlayer;
+                    if (player.ReverseCardPlayed == 1)
                     {
-                        player.I = player.NextPlayer;
-                        player.Test = 0;
+                        player.Player = player.NextPlayer;
+                        player.ReverseCardPlayed = 0;
                     }
-                    for (player.I = player.I; player.I <= 3; player.I++)
+                    for (player.Player = player.Player; player.Player <= player.CountOfPlayers - 1; player.Player++)
                     {
                         Game();
                     }
@@ -101,39 +117,39 @@ namespace Uno_Game
                 
                 else if (player.Reset == 1)
                 {
-                    player.I = startingPlayer;
-                    if (player.Test == 1)
+                    player.Player = startingPlayer;
+                    if (player.ReverseCardPlayed == 1)
                     {
-                        player.I = player.NextPlayer;
-                        player.Test = 0;
+                        player.Player = player.NextPlayer;
+                        player.ReverseCardPlayed = 0;
                     }
-                    for (player.I = player.I; player.I >= 0; player.I--)
+                    for (player.Player = player.Player; player.Player >= 0; player.Player--)
                     {
                         Game();
-
                     }
-                    startingPlayer = 3;
+                    startingPlayer = player.CountOfPlayers - 1;
                 }
             }
 
             void Game()
             {
-                Console.Write("Nächster Spiesler: ");
+                Console.Write("Nächster Spieler: ");
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 if (player.Reset == 0)
                 {
-                    int next = (player.I + 1) % players.Count;
+                    int next = (player.Player + 1) % players.Count;
                     Console.WriteLine(players[next].Name);
                 }
                 else if (player.Reset == 1)
                 {
-                    int next = (player.I == 0) ? (players.Count - 1) : (player.I - 1) % players.Count;
+                    int next = (player.Player == 0) ? (players.Count - 1) : (player.Player - 1) % players.Count;
                     Console.WriteLine(players[next].Name);
 
                 };
                 
-                Console.Write(players[player.I].Name);
-                player.P = player.I;
+                
+                Console.Write(players[player.Player].Name);
+                player.PlayerSave = player.Player;
                 Console.ResetColor();
                 Console.WriteLine(", du bist dran.");
                 Console.ResetColor();
@@ -167,7 +183,7 @@ namespace Uno_Game
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Deine Karten:");
                 Console.ResetColor();
-                model.PrintHand(players[player.I].Hand);
+                model.PrintHand(players[player.Player].Hand);
 
                 bool validCardPlayed = false;
 
@@ -183,7 +199,7 @@ namespace Uno_Game
                     if (string.IsNullOrWhiteSpace(input))
                     {
                         string drawnCard = model.DrawCard(deck, center);
-                        players[player.I].Hand.Add(drawnCard);
+                        players[player.Player].Hand.Add(drawnCard);
 
                         ConsoleColor consoleColor;
                         string[] cardColor = drawnCard.Split(' ');
@@ -191,7 +207,7 @@ namespace Uno_Game
                         if (Enum.TryParse(cardColor[0], true, out consoleColor))
                         {
                             Console.ForegroundColor = ConsoleColor.Cyan;
-                            Console.Write(players[player.I].Name);
+                            Console.Write(players[player.Player].Name);
                             Console.ForegroundColor = ConsoleColor.DarkGray;
                             Console.Write(" hat eine Karte gezogen: ");
                             Console.ForegroundColor = consoleColor;
@@ -201,7 +217,7 @@ namespace Uno_Game
                         else if (drawnCard.Contains("Wild") || drawnCard.Contains("Draw 4"))
                         {
                             Console.ForegroundColor = ConsoleColor.Cyan;
-                            Console.Write(players[player.I].Name);
+                            Console.Write(players[player.Player].Name);
                             Console.ForegroundColor = ConsoleColor.DarkGray;
                             Console.Write(" hat eine Karte gezogen: ");
                             Console.ForegroundColor = ConsoleColor.White;
@@ -219,9 +235,9 @@ namespace Uno_Game
                         Enter();
                     }
                     else if (int.TryParse(input, out int cardIndex) && cardIndex >= 0 &&
-                             cardIndex < players[player.I].Hand.Count)
+                             cardIndex < players[player.Player].Hand.Count)
                     {
-                        string selectedCard = players[player.I].Hand[cardIndex];
+                        string selectedCard = players[player.Player].Hand[cardIndex];
 
                         
                         
@@ -236,11 +252,11 @@ namespace Uno_Game
                                 {
                                     if (player.Reset == 0)
                                     {
-                                        nextPlayerIndex = (player.I + 1) % players.Count;
+                                        nextPlayerIndex = (player.Player + 1) % players.Count;
                                     }
                                     else if (player.Reset == 1)
                                     {
-                                        nextPlayerIndex = (player.I - 1) % players.Count;
+                                        nextPlayerIndex = (player.Player - 1) % players.Count;
                                     }
 
                                     if (nextPlayerIndex >= 0 && nextPlayerIndex < players.Count)
@@ -260,34 +276,35 @@ namespace Uno_Game
                                 int nextPlayerIndex = 0;
                                 if (player.Reset == 0)
                                 {
-                                    nextPlayerIndex = (player.I + 1) % players.Count;
+                                    nextPlayerIndex = (player.Player + 1) % players.Count;
                                 }
                                 else if (player.Reset == 1)
                                 {
-                                    nextPlayerIndex = (player.I - 1) % players.Count;
+                                    nextPlayerIndex = (player.Player - 1) % players.Count;
                                 }
                                 Console.WriteLine(players[nextPlayerIndex].Name + " wird übersprungen!");
                                 validCardPlayed = true;
-                                player.I = nextPlayerIndex;
+                                player.Player = nextPlayerIndex;
                             }
 
 
                             if (model.IsReverse(selectedCard))
                             {
-                                player.Test = 1;
+                                player.ReverseCardPlayed = 1;
                                 if (player.Reset == 0)
                                 {
                                     player.Reset = 1;
-                                    player.NextPlayer = (player.I - 1) % players.Count;
-                                    player.I = 3;
-                                    //player.I = 3;
+                                    player.NextPlayer = (player.Player - 1) % players.Count;
+                                    player.Player = player.CountOfPlayers - 1;
+
+                                    
                                 }
                                 else if (player.Reset == 1)
                                 {
                                     player.Reset = 0;
-                                    player.NextPlayer = (player.I + 1) % players.Count;
-                                    player.I = 0;
-                                    //player.I = 0;
+                                    player.NextPlayer = (player.Player + 1) % players.Count;
+                                    player.Player = 0;
+
                                 }
                                 else
                                 {
@@ -341,11 +358,11 @@ namespace Uno_Game
                                     {
                                         if (player.Reset == 0)
                                         {
-                                            nextPlayerIndex = (player.I + 1) % players.Count;
+                                            nextPlayerIndex = (player.Player + 1) % players.Count;
                                         }
                                         else if (player.Reset == 1)
                                         {
-                                            nextPlayerIndex = (player.I - 1) % players.Count;
+                                            nextPlayerIndex = (player.Player - 1) % players.Count;
                                         }
 
                                         if (nextPlayerIndex >= 0 && nextPlayerIndex < players.Count)
@@ -362,8 +379,8 @@ namespace Uno_Game
                             }
                             
                             center.Add(selectedCard);
-                            players[player.P].Hand.RemoveAt(cardIndex);
-                            Console.WriteLine(players[player.P].Name + " hat " + selectedCard + " gespielt.");
+                            players[player.PlayerSave].Hand.RemoveAt(cardIndex);
+                            Console.WriteLine(players[player.PlayerSave].Name + " hat " + selectedCard + " gespielt.");
                             validCardPlayed = true;
                             Enter();
                         }
@@ -380,14 +397,14 @@ namespace Uno_Game
                     }
                 }
 
-                if (players[player.I].Hand.Count == 1)
+                if (players[player.Player].Hand.Count == 1)
                 {
-                    Console.WriteLine(players[player.I].Name + " ruft UNO!");
+                    Console.WriteLine(players[player.Player].Name + " ruft UNO!");
                 }
 
-                if (players[player.I].Hand.Count == 0)
+                if (players[player.Player].Hand.Count == 0)
                 {
-                    Console.WriteLine(players[player.I].Name + " hat gewonnen!");
+                    Console.WriteLine(players[player.Player].Name + " hat gewonnen!");
                     return;
                 }
 
