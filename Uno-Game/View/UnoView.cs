@@ -82,9 +82,6 @@ namespace Uno_Game
 
             while (true)
             {
-                
-                
-                
                 if (player.Reset == 0)
                 {
                     player.I = startingPlayer;
@@ -121,7 +118,20 @@ namespace Uno_Game
 
             void Game()
             {
+                Console.Write("Nächster Spiesler: ");
                 Console.ForegroundColor = ConsoleColor.Cyan;
+                if (player.Reset == 0)
+                {
+                    int next = (player.I + 1) % players.Count;
+                    Console.WriteLine(players[next].Name);
+                }
+                else if (player.Reset == 1)
+                {
+                    int next = (player.I == 0) ? (players.Count - 1) : (player.I - 1) % players.Count;
+                    Console.WriteLine(players[next].Name);
+
+                };
+                
                 Console.Write(players[player.I].Name);
                 player.P = player.I;
                 Console.ResetColor();

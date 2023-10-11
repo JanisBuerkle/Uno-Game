@@ -87,11 +87,6 @@
                     Console.WriteLine(card);
                     Console.ResetColor();
                 }
-                else
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("ALARM!!! ALARM!!");
-                }
             }
         }
 
@@ -150,6 +145,8 @@
                 {
                     Console.WriteLine("Stapel ist Leer und es liegen keine Karten mehr die man mischen kann.");
                     Console.WriteLine("Ihr habt alle Karten auf der Hand spielt mit diesen!");
+                    string testen = "";
+                    return testen;
                 }
             }
             var card = deck.First();
@@ -227,8 +224,8 @@
 
         public bool IsValidColor(string color)
         {
-            List<string> validColors = new List<string> { "Red", "Green", "Blue", "Yellow" };
-            return validColors.Contains(color);
+            List<string> validColors = new List<string> { "red", "green", "blue", "yellow" };
+            return validColors.Contains(color.ToLower());
         }
     }
 }
