@@ -5,15 +5,13 @@ namespace Uno_Game
     public class UnoView
     {
         static UnoModel model = new UnoModel();
-        static List<string> center = new List<string>();
-        static Players player = new Players();
-        static List<Players> players = new List<Players>();
-        
+
         public void Start()
         {
-            player.Reset = 0;
+            model.player.Reset = 0;
             Console.WriteLine("Willkommen bei UNO!");
         }
+
         public void ChoosePlayerCount()
         {
             int i = 0;
@@ -23,8 +21,8 @@ namespace Uno_Game
                 string CountOfPlayersEingabe = Console.ReadLine();
                 if (int.TryParse(CountOfPlayersEingabe, out int CountOfPlayersConvert))
                 {
-                    player.CountOfPlayers = CountOfPlayersConvert;
-                    Console.WriteLine("Anzahl der Spieler: " + player.CountOfPlayers);
+                    model.player.CountOfPlayers = CountOfPlayersConvert;
+                    Console.WriteLine("Anzahl der Spieler: " + model.player.CountOfPlayers);
                     i = 1;
                 }
                 else
@@ -37,12 +35,12 @@ namespace Uno_Game
         public void ChoosePlayerNames()
         {
             int zahl = 0;
-            for (int playerNumb = 0; playerNumb < player.CountOfPlayers; playerNumb++)
+            for (int playerNumb = 0; playerNumb < model.player.CountOfPlayers; playerNumb++)
             {
                 zahl++;
                 Console.WriteLine("Gib den {0}. Namen ein:", zahl);
                 string player = Console.ReadLine();
-                players.Add(new Players() { Name = player });
+                model.players.Add(new Players() { Name = player });
             }
         }
 
@@ -68,318 +66,310 @@ namespace Uno_Game
                     default:
                         Fehler();
                         break;
-                    
+
                 }
             }
         }
-        
+
         public void Fehler()
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Ungültige Eingabe. Bitte überprüfe deine Eingabe!");
             Console.ResetColor();
         }
+
         public void Clear()
         {
             Thread.Sleep(1000);
             Console.Clear();
         }
 
+        public void PlayerDisplay()
+        {
+            Console.Write("Nächster Spieler: ");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            if (model.player.Reset == 0)
+            {
+                int next = (model.player.Player + 1) % model.players.Count;
+                Console.WriteLine(model.players[next].Name);
+            }
+            else if (model.player.Reset == 1)
+            {
+                int next = (model.player.Player == 0)
+                    ? (model.players.Count - 1)
+                    : (model.player.Player - 1) % model.players.Count;
+                Console.WriteLine(model.players[next].Name);
+            }
+
+            ;
+            Console.Write(model.players[model.player.Player].Name);
+            model.player.PlayerSave = model.player.Player;
+            Console.ResetColor();
+            Console.WriteLine(", du bist dran.");
+            Console.ResetColor();
+        }
 
         public void Starti()
         {
             Clear();
         }
-        
-        public void test()
+
+        public void Game()
         {
-            
-            while (true)
+            if (model.center.Count > 0)
             {
-                if (player.Reset == 0)
+                ConsoleColor consoleColor;
+                string[] centerCardColor = model.center.Last().Split(' ');
+
+                if (Enum.TryParse(centerCardColor[0], true, out consoleColor))
                 {
-                    player.Player = player.StartingPlayer;
-                    if (player.ReverseCardPlayed == 1)
-                    {
-                        player.Player = player.NextPlayer;
-                        player.ReverseCardPlayed = 0;
-                    }
-                    for (player.Player = player.Player; player.Player <= player.CountOfPlayers - 1; player.Player++)
-                    {
-                        Game();
-                    }
-                    player.StartingPlayer = 0;
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    Console.Write("Karte auf dem Ablagestapel: ");
+                    Console.ForegroundColor = consoleColor;
+                    Console.WriteLine(model.center.Last());
+                    Console.ResetColor();
                 }
-                else if (player.Reset == 1)
+                else
                 {
-                    player.Player = player.StartingPlayer;
-                    if (player.ReverseCardPlayed == 1)
-                    {
-                        player.Player = player.NextPlayer;
-                        player.ReverseCardPlayed = 0;
-                    }
-                    for (player.Player = player.Player; player.Player >= 0; player.Player--)
-                    {
-                        Game();
-                    }
-                    player.StartingPlayer = player.CountOfPlayers - 1;
+                    Console.WriteLine("Ungültige Farbe. Verwende die Standardfarbe.");
+                    Console.ResetColor();
                 }
             }
-            void Game()
+            else
             {
-                Console.Write("Nächster Spieler: ");
-                Console.ForegroundColor = ConsoleColor.Cyan;
-                if (player.Reset == 0)
-                {
-                    int next = (player.Player + 1) % players.Count;
-                    Console.WriteLine(players[next].Name);
-                }
-                else if (player.Reset == 1)
-                {
-                    int next = (player.Player == 0) ? (players.Count - 1) : (player.Player - 1) % players.Count;
-                    Console.WriteLine(players[next].Name);
-                };
-                Console.Write(players[player.Player].Name);
-                player.PlayerSave = player.Player;
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Der Ablagestapel ist noch leer.");
                 Console.ResetColor();
-                Console.WriteLine(", du bist dran.");
-                Console.ResetColor();
+            }
 
-                if (center.Count > 0)
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("Deine Karten:");
+            Console.ResetColor();
+            model.PrintHand(model.players[model.player.Player].Hand);
+            bool validCardPlayed = false;
+            while (!validCardPlayed)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.WriteLine("Wähle eine Karte zum Spielen oder drücke Enter um eine Karte zu ziehen:");
+                Console.ResetColor();
+                string input = Console.ReadLine();
+
+                if (string.IsNullOrWhiteSpace(input))
                 {
+                    string drawnCard = model.DrawCard(model.center);
+                    model.players[model.player.Player].Hand.Add(drawnCard);
+
                     ConsoleColor consoleColor;
-                    string[] centerCardColor = center.Last().Split(' ');
+                    string[] cardColor = drawnCard.Split(' ');
 
-                    if (Enum.TryParse(centerCardColor[0], true, out consoleColor))
+                    if (Enum.TryParse(cardColor[0], true, out consoleColor))
                     {
+                        Console.ForegroundColor = ConsoleColor.Cyan;
+                        Console.Write(model.players[model.player.Player].Name);
                         Console.ForegroundColor = ConsoleColor.DarkGray;
-                        Console.Write("Karte auf dem Ablagestapel: ");
+                        Console.Write(" hat eine Karte gezogen: ");
                         Console.ForegroundColor = consoleColor;
-                        Console.WriteLine(center.Last());
+                        Console.WriteLine(drawnCard);
+                        Console.ResetColor();
+                    }
+                    else if (drawnCard.Contains("Wild") || drawnCard.Contains("Draw 4"))
+                    {
+                        Console.ForegroundColor = ConsoleColor.Cyan;
+                        Console.Write(model.players[model.player.Player].Name);
+                        Console.ForegroundColor = ConsoleColor.DarkGray;
+                        Console.Write(" hat eine Karte gezogen: ");
+                        Console.ForegroundColor = ConsoleColor.White;
+                        Console.WriteLine(drawnCard);
                         Console.ResetColor();
                     }
                     else
                     {
-                        Console.WriteLine("Ungültige Farbe. Verwende die Standardfarbe.");
-                        Console.ResetColor();
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("ALARM!!! ALARM!!");
                     }
+
+                    validCardPlayed = true;
+                    Enter();
                 }
-                else
+                else if (int.TryParse(input, out int cardIndex) && cardIndex >= 0 &&
+                         cardIndex < model.players[model.player.Player].Hand.Count)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Der Ablagestapel ist noch leer.");
-                    Console.ResetColor();
-                }
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Deine Karten:");
-                Console.ResetColor();
-                model.PrintHand(players[player.Player].Hand);
-                bool validCardPlayed = false;
-                while (!validCardPlayed)
-                {
-                    Console.ForegroundColor = ConsoleColor.DarkGray;
-                    Console.WriteLine("Wähle eine Karte zum Spielen oder drücke Enter um eine Karte zu ziehen:");
-                    Console.ResetColor();
-                    string input = Console.ReadLine();
+                    string selectedCard = model.players[model.player.Player].Hand[cardIndex];
 
-                    if (string.IsNullOrWhiteSpace(input))
+                    if (model.IsCardPlayable(selectedCard, model.center))
                     {
-                        string drawnCard = model.DrawCard(center);
-                        players[player.Player].Hand.Add(drawnCard);
+                        if (model.IsTwoPlus(selectedCard))
+                        {
+                            int number = 0;
+                            int nextPlayerIndex = -1;
 
-                        ConsoleColor consoleColor;
-                        string[] cardColor = drawnCard.Split(' ');
+                            for (number = 0; number < 2; number++)
+                            {
+                                if (model.player.Reset == 0)
+                                {
+                                    nextPlayerIndex = (model.player.Player + 1) % model.players.Count;
+                                }
+                                else if (model.player.Reset == 1)
+                                {
+                                    nextPlayerIndex = (model.player.Player - 1) % model.players.Count;
+                                }
 
-                        if (Enum.TryParse(cardColor[0], true, out consoleColor))
-                        {
-                            Console.ForegroundColor = ConsoleColor.Cyan;
-                            Console.Write(players[player.Player].Name);
-                            Console.ForegroundColor = ConsoleColor.DarkGray;
-                            Console.Write(" hat eine Karte gezogen: ");
-                            Console.ForegroundColor = consoleColor;
-                            Console.WriteLine(drawnCard);
-                            Console.ResetColor();
+                                if (nextPlayerIndex >= 0 && nextPlayerIndex < model.players.Count)
+                                {
+                                    string drawnCard = model.DrawCard(model.center);
+                                    model.players[nextPlayerIndex].Hand.Add(drawnCard);
+                                    Console.WriteLine(model.players[nextPlayerIndex].Name +
+                                                      " hat eine Karte gezogen: " +
+                                                      drawnCard);
+                                    validCardPlayed = true;
+                                }
+                            }
                         }
-                        else if (drawnCard.Contains("Wild") || drawnCard.Contains("Draw 4"))
-                        {
-                            Console.ForegroundColor = ConsoleColor.Cyan;
-                            Console.Write(players[player.Player].Name);
-                            Console.ForegroundColor = ConsoleColor.DarkGray;
-                            Console.Write(" hat eine Karte gezogen: ");
-                            Console.ForegroundColor = ConsoleColor.White;
-                            Console.WriteLine(drawnCard);
-                            Console.ResetColor();
-                        }
-                        else
-                        {
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine("ALARM!!! ALARM!!");
-                        }
-                        validCardPlayed = true;
-                        Enter();
-                    }
-                    else if (int.TryParse(input, out int cardIndex) && cardIndex >= 0 && cardIndex < players[player.Player].Hand.Count)
-                    {
-                        string selectedCard = players[player.Player].Hand[cardIndex];
 
-                        if (model.IsCardPlayable(selectedCard, center))
+                        if (model.IsSkip(selectedCard))
                         {
-                            if (model.IsTwoPlus(selectedCard))
+                            int nextPlayerIndex = 0;
+                            if (model.player.Reset == 0)
+                            {
+                                nextPlayerIndex = (model.player.Player + 1) % model.players.Count;
+                            }
+                            else if (model.player.Reset == 1)
+                            {
+                                nextPlayerIndex = (model.player.Player - 1) % model.players.Count;
+                            }
+
+                            Console.WriteLine(model.players[nextPlayerIndex].Name + " wird übersprungen!");
+                            validCardPlayed = true;
+                            model.player.Player = nextPlayerIndex;
+                        }
+
+                        if (model.IsReverse(selectedCard))
+                        {
+                            model.player.ReverseCardPlayed = 1;
+                            if (model.player.Reset == 0)
+                            {
+                                model.player.Reset = 1;
+                                model.player.NextPlayer = (model.player.Player - 1) % model.players.Count;
+                                model.player.Player = model.player.CountOfPlayers - 1;
+                            }
+                            else if (model.player.Reset == 1)
+                            {
+                                model.player.Reset = 0;
+                                model.player.NextPlayer = (model.player.Player + 1) % model.players.Count;
+                                model.player.Player = 0;
+                            }
+                            else
+                            {
+                                Console.WriteLine("FEHLER");
+                            }
+
+                            Console.WriteLine("Richtung wurde geändert!");
+                            validCardPlayed = true;
+                        }
+
+                        if (model.IsWildcard(selectedCard))
+                        {
+                            string cards = selectedCard;
+                            Console.WriteLine("Welche Farbe möchtest du wählen (Red, Green, Blue, Yellow)?");
+                            string colorInput = Console.ReadLine();
+                            string chosenColor = "";
+                            switch (colorInput.ToLower())
+                            {
+                                case "red":
+                                    chosenColor = "Red";
+                                    break;
+                                case "green":
+                                    chosenColor = "Green";
+                                    break;
+                                case "blue":
+                                    chosenColor = "Blue";
+                                    break;
+                                case "yellow":
+                                    chosenColor = "Yellow";
+                                    break;
+                            }
+
+                            if (model.IsValidColor(chosenColor) && cards.Contains("Draw 4"))
+                            {
+                                selectedCard = chosenColor + " " + "+4";
+                            }
+                            else if (model.IsValidColor(chosenColor))
+                            {
+                                selectedCard = chosenColor + " " + "Wild";
+                            }
+                            else
+                            {
+                                Console.WriteLine("Ungültige Farbwahl. Die Karte wurde nicht gespielt.");
+                                continue;
+                            }
+
+                            if (cards.Contains("Draw 4"))
                             {
                                 int number = 0;
                                 int nextPlayerIndex = -1;
-
-                                for (number = 0; number < 2; number++)
+                                for (number = 0; number < 4; number++)
                                 {
-                                    if (player.Reset == 0)
+                                    if (model.player.Reset == 0)
                                     {
-                                        nextPlayerIndex = (player.Player + 1) % players.Count;
+                                        nextPlayerIndex = (model.player.Player + 1) % model.players.Count;
                                     }
-                                    else if (player.Reset == 1)
+                                    else if (model.player.Reset == 1)
                                     {
-                                        nextPlayerIndex = (player.Player - 1) % players.Count;
+                                        nextPlayerIndex = (model.player.Player - 1) % model.players.Count;
                                     }
 
-                                    if (nextPlayerIndex >= 0 && nextPlayerIndex < players.Count)
+                                    if (nextPlayerIndex >= 0 && nextPlayerIndex < model.players.Count)
                                     {
-                                        string drawnCard = model.DrawCard(center);
-                                        players[nextPlayerIndex].Hand.Add(drawnCard);
-                                        Console.WriteLine(players[nextPlayerIndex].Name + " hat eine Karte gezogen: " +
-                                                          drawnCard);
+                                        string drawnCard = model.DrawCard(model.center);
+                                        model.players[nextPlayerIndex].Hand.Add(drawnCard);
+                                        Console.WriteLine(model.players[nextPlayerIndex].Name +
+                                                          " hat eine Karte gezogen: " + drawnCard);
                                         validCardPlayed = true;
                                     }
                                 }
-                            }
-                            if (model.IsSkip(selectedCard))
-                            {
-                                int nextPlayerIndex = 0;
-                                if (player.Reset == 0)
-                                {
-                                    nextPlayerIndex = (player.Player + 1) % players.Count;
-                                }
-                                else if (player.Reset == 1)
-                                {
-                                    nextPlayerIndex = (player.Player - 1) % players.Count;
-                                }
-                                Console.WriteLine(players[nextPlayerIndex].Name + " wird übersprungen!");
-                                validCardPlayed = true;
-                                player.Player = nextPlayerIndex;
-                            }
-                            if (model.IsReverse(selectedCard))
-                            {
-                                player.ReverseCardPlayed = 1;
-                                if (player.Reset == 0)
-                                {
-                                    player.Reset = 1;
-                                    player.NextPlayer = (player.Player - 1) % players.Count;
-                                    player.Player = player.CountOfPlayers - 1;
-                                }
-                                else if (player.Reset == 1)
-                                {
-                                    player.Reset = 0;
-                                    player.NextPlayer = (player.Player + 1) % players.Count;
-                                    player.Player = 0;
-                                }
-                                else
-                                {
-                                    Console.WriteLine("FEHLER");
-                                }
-                                Console.WriteLine("Richtung wurde geändert!");
-                                validCardPlayed = true;
-                            }
-                            if (model.IsWildcard(selectedCard))
-                            {
-                                string cards = selectedCard;
-                                Console.WriteLine("Welche Farbe möchtest du wählen (Red, Green, Blue, Yellow)?");
-                                string colorInput = Console.ReadLine();
-                                string chosenColor = "";
-                                switch (colorInput.ToLower())
-                                {
-                                    case "red":
-                                        chosenColor = "Red";
-                                        break;
-                                    case "green":
-                                        chosenColor = "Green";
-                                        break;
-                                    case "blue":
-                                        chosenColor = "Blue";
-                                        break;
-                                    case "yellow":
-                                        chosenColor = "Yellow";
-                                        break;
-                                }
-                                if (model.IsValidColor(chosenColor) && cards.Contains("Draw 4"))
-                                {
-                                    selectedCard = chosenColor + " " + "+4";
-                                }
-                                else if (model.IsValidColor(chosenColor))
-                                {
-                                    selectedCard = chosenColor + " " + "Wild";
-                                }
-                                else
-                                {
-                                    Console.WriteLine("Ungültige Farbwahl. Die Karte wurde nicht gespielt.");
-                                    continue;
-                                }
-                                if (cards.Contains("Draw 4"))
-                                {
-                                    int number = 0;
-                                    int nextPlayerIndex = -1;
-                                    for (number = 0; number < 4; number++)
-                                    {
-                                        if (player.Reset == 0)
-                                        {
-                                            nextPlayerIndex = (player.Player + 1) % players.Count;
-                                        }
-                                        else if (player.Reset == 1)
-                                        {
-                                            nextPlayerIndex = (player.Player - 1) % players.Count;
-                                        }
 
-                                        if (nextPlayerIndex >= 0 && nextPlayerIndex < players.Count)
-                                        {
-                                            string drawnCard = model.DrawCard(center);
-                                            players[nextPlayerIndex].Hand.Add(drawnCard);
-                                            Console.WriteLine(players[nextPlayerIndex].Name + " hat eine Karte gezogen: " + drawnCard);
-                                            validCardPlayed = true;
-                                        }
-                                    }
-
-                                    Enter();
-                                }
+                                Enter();
                             }
-                            center.Add(selectedCard);
-                            players[player.PlayerSave].Hand.RemoveAt(cardIndex);
-                            Console.WriteLine(players[player.PlayerSave].Name + " hat " + selectedCard + " gespielt.");
-                            validCardPlayed = true;
-                            Enter();
                         }
-                        else
-                        {
-                            Console.WriteLine(
-                                "Du kannst die ausgewählte Karte nicht spielen. Wähle eine andere Karte.");
-                        }
+
+                        model.center.Add(selectedCard);
+                        model.players[model.player.PlayerSave].Hand.RemoveAt(cardIndex);
+                        Console.WriteLine(model.players[model.player.PlayerSave].Name + " hat " + selectedCard +
+                                          " gespielt.");
+                        validCardPlayed = true;
+                        Enter();
                     }
                     else
                     {
                         Console.WriteLine(
-                            "Ungültige Eingabe. Du musst einen gültigen Index eingeben oder Enter drücken.");
+                            "Du kannst die ausgewählte Karte nicht spielen. Wähle eine andere Karte.");
                     }
                 }
-                if (players[player.Player].Hand.Count == 1)
+                else
                 {
-                    Console.WriteLine(players[player.Player].Name + " ruft UNO!");
+                    Console.WriteLine(
+                        "Ungültige Eingabe. Du musst einen gültigen Index eingeben oder Enter drücken.");
                 }
-                if (players[player.Player].Hand.Count == 0)
-                {
-                    Console.WriteLine(players[player.Player].Name + " hat gewonnen!");
-                    return;
-                }
-                Thread.Sleep(100);
-                Console.Clear();
             }
+
+            if (model.players[model.player.Player].Hand.Count == 1)
+            {
+                Console.WriteLine(model.players[model.player.Player].Name + " ruft UNO!");
+            }
+
+            if (model.players[model.player.Player].Hand.Count == 0)
+            {
+                Console.WriteLine(model.players[model.player.Player].Name + " hat gewonnen!");
+                return;
+            }
+
+            Thread.Sleep(100);
+            Console.Clear();
         }
-        static void Enter()
+
+
+
+        public void Enter()
         {
             Console.ForegroundColor = ConsoleColor.DarkGray;
             Console.Write("Drücke ");
@@ -390,7 +380,8 @@ namespace Uno_Game
             Console.ResetColor();
             Console.ReadLine();
         }
-        public void Rules()
+
+        void Rules()
         {
             Console.Clear();
             Console.WriteLine("Die Originalen UNO-Spielregeln: \n" +

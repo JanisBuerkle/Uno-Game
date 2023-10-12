@@ -2,32 +2,41 @@
 {
     public class UnoModel
     {
+
+        // static Players player = new Players() 
+        
+        public Players player = new Players();
+        public List<string> center = new List<string>();
+        public List<Players> players = new List<Players>();
         static Random random = new Random();
-        static Players player = new Players();
         public int ChooseStartingPlayer()
         {
             return random.Next(0, player.CountOfPlayers);
         }
+        
         public List<string> GenerateDeck(List<string> colors, List<string> values, List<string> specialCards)
         {
-
+            List<string> deck = new List<string>();
             foreach (string color in colors)
             {
                 foreach (string value in values)
                 {
-                    player.Deck.Add(color + " " + value);
-                    if (value != "0")
-                    {
-                        player.Deck.Add(color + " " + value);
-                    }
+                    deck.Add($"{color} {value}");
+                    player.Deck = deck;
+                     if (value != "0")
+                     {
+                         player.Deck.Add(color + " " + value);
+                     }
                 }
             }
+            
             foreach (string specialCard in specialCards)
             {
-                for (; player.Player < player.CountOfPlayers; player.Player++)
+                for (int i = 0; i < 4; i++)
                 {
-                    player.Deck.Add(specialCard);
+                    deck.Add(specialCard); 
                 }
+
             }
             return player.Deck;
         }
