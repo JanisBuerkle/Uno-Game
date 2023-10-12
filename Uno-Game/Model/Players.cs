@@ -8,6 +8,8 @@
     public int NextPlayer { get; set; }
     public int CountOfPlayers { get; set; }
     public List<string> Hand { get; set; }
+    public List<string> Deck { get; set; }
+    public int StartingPlayer { get; set; }
     public Players()
     {
         Hand = new List<string>();

@@ -1,23 +1,27 @@
-﻿namespace Uno_Game
+﻿using System.Data;
+
+namespace Uno_Game
 {
     public class UnoView
     {
-        static UnoModel model;
-        static List<string> center;
-        static Players player;
-        static List<Players> players;
-
-        public void StartGame()
+        static UnoModel model = new UnoModel();
+        static List<string> center = new List<string>();
+        static Players player = new Players();
+        static List<Players> players = new List<Players>();
+        
+        public void Start()
         {
+            player.Reset = 0;
             Console.WriteLine("Willkommen bei UNO!");
+        }
+        public void ChoosePlayerCount()
+        {
             int i = 0;
             while (i == 0)
             {
-                Console.WriteLine("Mit wie vielen Spielern wollt ihr spielen?");
+                Console.WriteLine("Mit wie vielen Spielern wollt ihr spielen? (2-5)");
                 string CountOfPlayersEingabe = Console.ReadLine();
-
-                int CountOfPlayersConvert;
-                if (int.TryParse(CountOfPlayersEingabe, out CountOfPlayersConvert))
+                if (int.TryParse(CountOfPlayersEingabe, out int CountOfPlayersConvert))
                 {
                     player.CountOfPlayers = CountOfPlayersConvert;
                     Console.WriteLine("Anzahl der Spieler: " + player.CountOfPlayers);
@@ -25,69 +29,76 @@
                 }
                 else
                 {
-                    Console.WriteLine("Ungültig. Bitte gebe eine Zahl zwischen 2-5 ein!");
+                    Fehler();
                 }
             }
+        }
+
+        public void ChoosePlayerNames()
+        {
+            int zahl = 0;
             for (int playerNumb = 0; playerNumb < player.CountOfPlayers; playerNumb++)
             {
-                Console.WriteLine("Gebt den Namen ein:");
+                zahl++;
+                Console.WriteLine("Gib den {0}. Namen ein:", zahl);
                 string player = Console.ReadLine();
-                players.Add(new Players()
-                {
-                    Name = player,
-                });
+                players.Add(new Players() { Name = player });
             }
+        }
+
+        public void RuleQuery()
+        {
             Console.WriteLine("Da wir dies nun haben fangen wir doch direkt an!");
             Console.WriteLine("Kennt ihr alle die Regeln? (y/n)");
 
             while (true)
             {
-                string input1 = Console.ReadLine();
-                if (input1 == "y")
+                string RuleQueryInput = Console.ReadLine();
+                switch (RuleQueryInput)
                 {
-                    Console.WriteLine("Gut, dann können wir ja direkt beginnen!");
-                    Thread.Sleep(1000);
-                    Console.Clear();
-                    Start();
-                }
-                else if (input1 == "n")
-                {
-                    Rules();
-                }
-                else
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Gebe 'y' oder 'n' ein.");
-                    Console.ResetColor();
+                    case "y":
+                        Console.WriteLine("Gut, dann können wir ja direkt beginnen!");
+                        Clear();
+                        Starti();
+                        return;
+                        break;
+                    case "n":
+                        Rules();
+                        break;
+                    default:
+                        Fehler();
+                        break;
+                    
                 }
             }
         }
-
-        static void Start()
+        
+        public void Fehler()
         {
-            player.Reset = 0;
-            int startingPlayer = model.ChooseStartingPlayer();
-            Console.WriteLine(players[startingPlayer].Name + " beginnt!");
-            Thread.Sleep(2000);
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Ungültige Eingabe. Bitte überprüfe deine Eingabe!");
+            Console.ResetColor();
+        }
+        public void Clear()
+        {
+            Thread.Sleep(1000);
             Console.Clear();
+        }
 
-            List<string> colors = new List<string> { "Red", "Green", "Blue", "Yellow" };
-            List<string> values = Enumerable.Range(0, 10).Select(i => i.ToString())
-                .Concat(new string[] { "Skip", "+2", "Reverse" }).ToList();
-            List<string> specialCards = new List<string> { "Wild ", "Draw 4" };
-            List<string> deck = model.GenerateDeck(colors, values, specialCards);
-            model.ShuffleDeck(deck);
-            foreach (Players player in players)
-            {
-                player.Hand = model.DealCards(deck, 7);
-            }
-            string firstCard = model.PlaceFirstCardInCenter(deck, center);
 
+        public void Starti()
+        {
+            Clear();
+        }
+        
+        public void test()
+        {
+            
             while (true)
             {
                 if (player.Reset == 0)
                 {
-                    player.Player = startingPlayer;
+                    player.Player = player.StartingPlayer;
                     if (player.ReverseCardPlayed == 1)
                     {
                         player.Player = player.NextPlayer;
@@ -97,11 +108,11 @@
                     {
                         Game();
                     }
-                    startingPlayer = 0;
+                    player.StartingPlayer = 0;
                 }
                 else if (player.Reset == 1)
                 {
-                    player.Player = startingPlayer;
+                    player.Player = player.StartingPlayer;
                     if (player.ReverseCardPlayed == 1)
                     {
                         player.Player = player.NextPlayer;
@@ -111,7 +122,7 @@
                     {
                         Game();
                     }
-                    startingPlayer = player.CountOfPlayers - 1;
+                    player.StartingPlayer = player.CountOfPlayers - 1;
                 }
             }
             void Game()
@@ -127,7 +138,6 @@
                 {
                     int next = (player.Player == 0) ? (players.Count - 1) : (player.Player - 1) % players.Count;
                     Console.WriteLine(players[next].Name);
-
                 };
                 Console.Write(players[player.Player].Name);
                 player.PlayerSave = player.Player;
@@ -174,7 +184,7 @@
 
                     if (string.IsNullOrWhiteSpace(input))
                     {
-                        string drawnCard = model.DrawCard(deck, center);
+                        string drawnCard = model.DrawCard(center);
                         players[player.Player].Hand.Add(drawnCard);
 
                         ConsoleColor consoleColor;
@@ -232,7 +242,7 @@
 
                                     if (nextPlayerIndex >= 0 && nextPlayerIndex < players.Count)
                                     {
-                                        string drawnCard = model.DrawCard(deck, center);
+                                        string drawnCard = model.DrawCard(center);
                                         players[nextPlayerIndex].Hand.Add(drawnCard);
                                         Console.WriteLine(players[nextPlayerIndex].Name + " hat eine Karte gezogen: " +
                                                           drawnCard);
@@ -328,7 +338,7 @@
 
                                         if (nextPlayerIndex >= 0 && nextPlayerIndex < players.Count)
                                         {
-                                            string drawnCard = model.DrawCard(deck, center);
+                                            string drawnCard = model.DrawCard(center);
                                             players[nextPlayerIndex].Hand.Add(drawnCard);
                                             Console.WriteLine(players[nextPlayerIndex].Name + " hat eine Karte gezogen: " + drawnCard);
                                             validCardPlayed = true;

@@ -4,6 +4,7 @@
     {
         static void Main()
         {
+            List<Players> players = new List<Players>{};
             UnoModel model = new UnoModel();
             UnoView view = new UnoView();
             UnoController controller = new UnoController(model, view);

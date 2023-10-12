@@ -2,24 +2,23 @@
 {
     public class UnoModel
     {
-        static Random random;
-        static Players player;
+        static Random random = new Random();
+        static Players player = new Players();
         public int ChooseStartingPlayer()
         {
             return random.Next(0, player.CountOfPlayers);
         }
         public List<string> GenerateDeck(List<string> colors, List<string> values, List<string> specialCards)
         {
-            List<string> deck = new List<string>();
 
             foreach (string color in colors)
             {
                 foreach (string value in values)
                 {
-                    deck.Add(color + " " + value);
+                    player.Deck.Add(color + " " + value);
                     if (value != "0")
                     {
-                        deck.Add(color + " " + value);
+                        player.Deck.Add(color + " " + value);
                     }
                 }
             }
@@ -27,30 +26,30 @@
             {
                 for (; player.Player < player.CountOfPlayers; player.Player++)
                 {
-                    deck.Add(specialCard);
+                    player.Deck.Add(specialCard);
                 }
             }
-            return deck;
+            return player.Deck;
         }
-        public void ShuffleDeck(List<string> deck)
+        public void ShuffleDeck()
         {
-            int number = deck.Count;
+            int number = player.Deck.Count;
             while (number > 1)
             {
                 number--;
                 int card = random.Next(number + 1);
-                string value = deck[card];
-                deck[card] = deck[number];
-                deck[number] = value;
+                string value = player.Deck[card];
+                player.Deck[card] = player.Deck[number];
+                player.Deck[number] = value;
             }
         }
-        public List<string> DealCards(List<string> deck, int handSize)
+        public List<string> DealCards(int handSize)
         {
             List<string> hand = new List<string>();
             for (player.Player = 0; player.Player < handSize; player.Player++)
             {
-                string card = deck.First();
-                deck.RemoveAt(0);
+                string card = player.Deck.First();
+                player.Deck.RemoveAt(0);
                 hand.Add(card);
             }
             return hand;
@@ -83,22 +82,22 @@
                 }
             }
         }
-        public string PlaceFirstCardInCenter(List<string> deck, List<string> center)
+        public string PlaceFirstCardInCenter(List<string> center)
         {
-            int randomCard = random.Next(deck.Count);
-            string selectedCard = deck[randomCard];
-            deck.RemoveAt(randomCard);
+            int randomCard = random.Next(player.Deck.Count);
+            string selectedCard = player.Deck[randomCard];
+            player.Deck.RemoveAt(randomCard);
             center.Add(selectedCard);
 
             return selectedCard;
         }
-        public string DrawCard(List<string> deck, List<string> center)
+        public string DrawCard(List<string> center)
         {
-            if (deck.Count == 0)
+            if (player.Deck.Count == 0)
             {
                 if (center.Count > 1)
                 {
-                    ShuffleDeck(deck);
+                    ShuffleDeck();
                     Console.WriteLine("Stapel ist Leer wird neu gemischt...");
                     Thread.Sleep(2000);
                     Console.WriteLine(center[0]);
@@ -116,7 +115,7 @@
                     int i = 1;
                     while (i < center.Count)
                     {
-                        deck.Add(center[i]);
+                        player.Deck.Add(center[i]);
                         i++;
                     }
                     center.Clear();
@@ -137,8 +136,8 @@
                     return testen;
                 }
             }
-            var card = deck.First();
-            deck.RemoveAt(0);
+            var card = player.Deck.First();
+            player.Deck.RemoveAt(0);
             return card;
         }
         public bool IsCardPlayable(string selectedCard, List<string> center)
