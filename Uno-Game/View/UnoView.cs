@@ -464,9 +464,9 @@
             Thread.Sleep(100);
             Console.Clear();
         }
-
-
-
+        
+        
+        
         public void Enter()
         {
             Console.ForegroundColor = ConsoleColor.DarkGray;
