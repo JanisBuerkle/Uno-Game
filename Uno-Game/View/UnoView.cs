@@ -1,25 +1,30 @@
-﻿using System.Data;
-
-namespace Uno_Game
+﻿namespace Uno_Game
 {
     public class UnoView
     {
-        static UnoModel model = new UnoModel();
+        //static UnoModel model = new UnoModel();
+        private readonly UnoModel model;
+
+        public UnoView(UnoModel model)
+        {
+            this.model = model;
+        }
 
         public void Start()
         {
-            model.player.Reset = 0;
+            model.player.Richtung = 0;
             Console.WriteLine("Willkommen bei UNO!");
         }
 
-        public void ChoosePlayerCount()
+        public int ChoosePlayerCount()
         {
             int i = 0;
             while (i == 0)
             {
                 Console.WriteLine("Mit wie vielen Spielern wollt ihr spielen? (2-5)");
                 string CountOfPlayersEingabe = Console.ReadLine();
-                if (int.TryParse(CountOfPlayersEingabe, out int CountOfPlayersConvert))
+                int CountOfPlayersConvert;
+                if (int.TryParse(CountOfPlayersEingabe, out CountOfPlayersConvert))
                 {
                     model.player.CountOfPlayers = CountOfPlayersConvert;
                     Console.WriteLine("Anzahl der Spieler: " + model.player.CountOfPlayers);
@@ -30,18 +35,88 @@ namespace Uno_Game
                     Fehler();
                 }
             }
+
+            return model.player.CountOfPlayers;
         }
 
-        public void ChoosePlayerNames()
+        public int ChoosePlayerNames()
         {
             int zahl = 0;
             for (int playerNumb = 0; playerNumb < model.player.CountOfPlayers; playerNumb++)
             {
                 zahl++;
-                Console.WriteLine("Gib den {0}. Namen ein:", zahl);
-                string player = Console.ReadLine();
-                model.players.Add(new Players() { Name = player });
+                bool success = false;
+                while (!success)
+                {
+                    Console.WriteLine("Gib den {0}. Namen ein:", zahl);
+                    string player = Console.ReadLine();
+                    int playeranzahl = model.players.Count;
+                    bool addName = true;
+                    bool noError = false;
+                    if (playeranzahl == 0)
+                    {
+                        if (player.Contains(" ") || player == "")
+                        {
+                            success = false;
+                            addName = false;
+                        } 
+                        else
+                        {
+                            model.players.Add(new Players() { Name = player });
+                            success = true;
+                            addName = false;
+                            noError = true;
+                        }
+                    }
+                    else
+                    {
+                        foreach (Players playerInList in model.players)
+                        {
+                            if (player.Contains(" ") || player == "")
+                            {
+                                addName = false;
+                            }
+                            else if (player == playerInList.Name)
+                            {
+                                success = false;
+                                addName = false;
+                            }
+                        }
+                    }
+
+                    if (addName)
+                    {
+                        model.players.Add(new Players() {Name = player});
+                        success = true;
+                    }
+                    else
+                    {
+                        if (noError)
+                        {
+                            
+                        }
+                        else
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine("Ungültige Eingabe. Bitte überprüfe deine Eingabe!");
+                            Console.ResetColor();
+                        }
+                    }
+                }
+
+                
+                // else if (players.Contains(new Players() { Name = player }))
+                // {
+                //     Console.WriteLine("Ihr könnt nicht zweimal den selben Namen nehmen!");
+                // }
+                // else
+                // {
+                //     model.players.Add(new Players() { Name = player });
+                // }
+
             }
+
+            return model.player.CountOfPlayers;
         }
 
         public void RuleQuery()
@@ -57,7 +132,6 @@ namespace Uno_Game
                     case "y":
                         Console.WriteLine("Gut, dann können wir ja direkt beginnen!");
                         Clear();
-                        Starti();
                         return;
                         break;
                     case "n":
@@ -88,45 +162,37 @@ namespace Uno_Game
         {
             Console.Write("Nächster Spieler: ");
             Console.ForegroundColor = ConsoleColor.Cyan;
-            if (model.player.Reset == 0)
+            if (model.player.Richtung == 0)
             {
                 int next = (model.player.Player + 1) % model.players.Count;
                 Console.WriteLine(model.players[next].Name);
             }
-            else if (model.player.Reset == 1)
+            else if (model.player.Richtung == 1)
             {
                 int next = (model.player.Player == 0)
                     ? (model.players.Count - 1)
                     : (model.player.Player - 1) % model.players.Count;
                 Console.WriteLine(model.players[next].Name);
             }
-
-            ;
             Console.Write(model.players[model.player.Player].Name);
             model.player.PlayerSave = model.player.Player;
             Console.ResetColor();
             Console.WriteLine(", du bist dran.");
             Console.ResetColor();
         }
-
-        public void Starti()
+        public void Center()
         {
-            Clear();
-        }
-
-        public void Game()
-        {
-            if (model.center.Count > 0)
+            if (model.player.Center.Count > 0)
             {
                 ConsoleColor consoleColor;
-                string[] centerCardColor = model.center.Last().Split(' ');
+                string[] centerCardColor = model.player.Center.Last().Split(' ');
 
                 if (Enum.TryParse(centerCardColor[0], true, out consoleColor))
                 {
                     Console.ForegroundColor = ConsoleColor.DarkGray;
                     Console.Write("Karte auf dem Ablagestapel: ");
                     Console.ForegroundColor = consoleColor;
-                    Console.WriteLine(model.center.Last());
+                    Console.WriteLine(model.player.Center.Last());
                     Console.ResetColor();
                 }
                 else
@@ -141,62 +207,71 @@ namespace Uno_Game
                 Console.WriteLine("Der Ablagestapel ist noch leer.");
                 Console.ResetColor();
             }
-
+        }
+        public void CardDisplay()
+        {
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("Deine Karten:");
             Console.ResetColor();
             model.PrintHand(model.players[model.player.Player].Hand);
-            bool validCardPlayed = false;
-            while (!validCardPlayed)
+        }
+
+
+        public void GameTurn()
+        {
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine("Wähle eine Karte zum Spielen oder drücke Enter um eine Karte zu ziehen:");
+            Console.ResetColor();
+        }
+
+
+        public void Play()
+        {
+            string input = Console.ReadLine();
+
+            if (string.IsNullOrWhiteSpace(input))
             {
-                Console.ForegroundColor = ConsoleColor.DarkGray;
-                Console.WriteLine("Wähle eine Karte zum Spielen oder drücke Enter um eine Karte zu ziehen:");
-                Console.ResetColor();
-                string input = Console.ReadLine();
+                string drawnCard = model.DrawCard();
+                model.players[model.player.Player].Hand.Add(drawnCard);
 
-                if (string.IsNullOrWhiteSpace(input))
+                ConsoleColor consoleColor;
+                string[] cardColor = drawnCard.Split(' ');
+
+                if (Enum.TryParse(cardColor[0], true, out consoleColor))
                 {
-                    string drawnCard = model.DrawCard(model.center);
-                    model.players[model.player.Player].Hand.Add(drawnCard);
-
-                    ConsoleColor consoleColor;
-                    string[] cardColor = drawnCard.Split(' ');
-
-                    if (Enum.TryParse(cardColor[0], true, out consoleColor))
-                    {
-                        Console.ForegroundColor = ConsoleColor.Cyan;
-                        Console.Write(model.players[model.player.Player].Name);
-                        Console.ForegroundColor = ConsoleColor.DarkGray;
-                        Console.Write(" hat eine Karte gezogen: ");
-                        Console.ForegroundColor = consoleColor;
-                        Console.WriteLine(drawnCard);
-                        Console.ResetColor();
-                    }
-                    else if (drawnCard.Contains("Wild") || drawnCard.Contains("Draw 4"))
-                    {
-                        Console.ForegroundColor = ConsoleColor.Cyan;
-                        Console.Write(model.players[model.player.Player].Name);
-                        Console.ForegroundColor = ConsoleColor.DarkGray;
-                        Console.Write(" hat eine Karte gezogen: ");
-                        Console.ForegroundColor = ConsoleColor.White;
-                        Console.WriteLine(drawnCard);
-                        Console.ResetColor();
-                    }
-                    else
-                    {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("ALARM!!! ALARM!!");
-                    }
-
-                    validCardPlayed = true;
-                    Enter();
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.Write(model.players[model.player.Player].Name);
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    Console.Write(" hat eine Karte gezogen: ");
+                    Console.ForegroundColor = consoleColor;
+                    Console.WriteLine(drawnCard);
+                    Console.ResetColor();
                 }
-                else if (int.TryParse(input, out int cardIndex) && cardIndex >= 0 &&
+                else if (drawnCard.Contains("Wild") || drawnCard.Contains("Draw 4"))
+                {
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.Write(model.players[model.player.Player].Name);
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    Console.Write(" hat eine Karte gezogen: ");
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.WriteLine(drawnCard);
+                    Console.ResetColor();
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("ALARM!!! ALARM!!");
+                }
+
+                model.player.validCardPlayed = true;
+                Enter();
+            }
+            else if (int.TryParse(input, out int cardIndex) && cardIndex >= 0 &&
                          cardIndex < model.players[model.player.Player].Hand.Count)
                 {
                     string selectedCard = model.players[model.player.Player].Hand[cardIndex];
 
-                    if (model.IsCardPlayable(selectedCard, model.center))
+                    if (model.IsCardPlayable(selectedCard))
                     {
                         if (model.IsTwoPlus(selectedCard))
                         {
@@ -205,23 +280,30 @@ namespace Uno_Game
 
                             for (number = 0; number < 2; number++)
                             {
-                                if (model.player.Reset == 0)
+                                if (model.player.Richtung == 0)
                                 {
                                     nextPlayerIndex = (model.player.Player + 1) % model.players.Count;
                                 }
-                                else if (model.player.Reset == 1)
+                                else if (model.player.Richtung == 1)
                                 {
-                                    nextPlayerIndex = (model.player.Player - 1) % model.players.Count;
+                                    if (model.player.Player == 0)
+                                    {
+                                        nextPlayerIndex = model.players.Count - 1;
+                                    }
+                                    else
+                                    {
+                                        nextPlayerIndex = (model.player.Player - 1) % model.players.Count;
+                                    }
                                 }
 
                                 if (nextPlayerIndex >= 0 && nextPlayerIndex < model.players.Count)
                                 {
-                                    string drawnCard = model.DrawCard(model.center);
+                                    string drawnCard = model.DrawCard();
                                     model.players[nextPlayerIndex].Hand.Add(drawnCard);
                                     Console.WriteLine(model.players[nextPlayerIndex].Name +
                                                       " hat eine Karte gezogen: " +
                                                       drawnCard);
-                                    validCardPlayed = true;
+                                    model.player.validCardPlayed = true;
                                 }
                             }
                         }
@@ -229,32 +311,40 @@ namespace Uno_Game
                         if (model.IsSkip(selectedCard))
                         {
                             int nextPlayerIndex = 0;
-                            if (model.player.Reset == 0)
+                            if (model.player.Richtung == 0)
                             {
                                 nextPlayerIndex = (model.player.Player + 1) % model.players.Count;
                             }
-                            else if (model.player.Reset == 1)
+                            else if (model.player.Richtung == 1)
                             {
-                                nextPlayerIndex = (model.player.Player - 1) % model.players.Count;
+                                if (model.player.Player == 0)
+                                {
+                                    nextPlayerIndex = model.players.Count - 1;
+                                }
+                                else
+                                {
+                                    nextPlayerIndex = (model.player.Player - 1) % model.players.Count;
+                                }
+
                             }
 
                             Console.WriteLine(model.players[nextPlayerIndex].Name + " wird übersprungen!");
-                            validCardPlayed = true;
+                            model.player.validCardPlayed = true;
                             model.player.Player = nextPlayerIndex;
                         }
 
                         if (model.IsReverse(selectedCard))
                         {
                             model.player.ReverseCardPlayed = 1;
-                            if (model.player.Reset == 0)
+                            if (model.player.Richtung == 0)
                             {
-                                model.player.Reset = 1;
+                                model.player.Richtung = 1;
                                 model.player.NextPlayer = (model.player.Player - 1) % model.players.Count;
                                 model.player.Player = model.player.CountOfPlayers - 1;
                             }
-                            else if (model.player.Reset == 1)
+                            else if (model.player.Richtung == 1)
                             {
-                                model.player.Reset = 0;
+                                model.player.Richtung = 0;
                                 model.player.NextPlayer = (model.player.Player + 1) % model.players.Count;
                                 model.player.Player = 0;
                             }
@@ -264,7 +354,7 @@ namespace Uno_Game
                             }
 
                             Console.WriteLine("Richtung wurde geändert!");
-                            validCardPlayed = true;
+                            model.player.validCardPlayed = true;
                         }
 
                         if (model.IsWildcard(selectedCard))
@@ -300,7 +390,6 @@ namespace Uno_Game
                             else
                             {
                                 Console.WriteLine("Ungültige Farbwahl. Die Karte wurde nicht gespielt.");
-                                continue;
                             }
 
                             if (cards.Contains("Draw 4"))
@@ -309,22 +398,29 @@ namespace Uno_Game
                                 int nextPlayerIndex = -1;
                                 for (number = 0; number < 4; number++)
                                 {
-                                    if (model.player.Reset == 0)
+                                    if (model.player.Richtung == 0)
                                     {
                                         nextPlayerIndex = (model.player.Player + 1) % model.players.Count;
                                     }
-                                    else if (model.player.Reset == 1)
+                                    else if (model.player.Richtung == 1)
                                     {
-                                        nextPlayerIndex = (model.player.Player - 1) % model.players.Count;
+                                        if (model.player.Player == 0)
+                                        {
+                                            nextPlayerIndex = model.players.Count - 1;
+                                        }
+                                        else
+                                        {
+                                            nextPlayerIndex = (model.player.Player - 1) % model.players.Count;
+                                        }
                                     }
 
                                     if (nextPlayerIndex >= 0 && nextPlayerIndex < model.players.Count)
                                     {
-                                        string drawnCard = model.DrawCard(model.center);
+                                        string drawnCard = model.DrawCard();
                                         model.players[nextPlayerIndex].Hand.Add(drawnCard);
                                         Console.WriteLine(model.players[nextPlayerIndex].Name +
                                                           " hat eine Karte gezogen: " + drawnCard);
-                                        validCardPlayed = true;
+                                        model.player.validCardPlayed = true;
                                     }
                                 }
 
@@ -332,11 +428,10 @@ namespace Uno_Game
                             }
                         }
 
-                        model.center.Add(selectedCard);
+                        model.player.Center.Add(selectedCard);
                         model.players[model.player.PlayerSave].Hand.RemoveAt(cardIndex);
-                        Console.WriteLine(model.players[model.player.PlayerSave].Name + " hat " + selectedCard +
-                                          " gespielt.");
-                        validCardPlayed = true;
+                        Console.WriteLine(model.players[model.player.PlayerSave].Name + " hat " + selectedCard + " gespielt.");
+                        model.player.validCardPlayed = true;
                         Enter();
                     }
                     else
@@ -350,8 +445,11 @@ namespace Uno_Game
                     Console.WriteLine(
                         "Ungültige Eingabe. Du musst einen gültigen Index eingeben oder Enter drücken.");
                 }
-            }
+        }
+        public void Game()
+        {
 
+            
             if (model.players[model.player.Player].Hand.Count == 1)
             {
                 Console.WriteLine(model.players[model.player.Player].Name + " ruft UNO!");
@@ -379,6 +477,7 @@ namespace Uno_Game
             Console.WriteLine(" zum fortsetzen: ");
             Console.ResetColor();
             Console.ReadLine();
+            Console.Clear();
         }
 
         void Rules()

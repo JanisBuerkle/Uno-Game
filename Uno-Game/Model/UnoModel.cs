@@ -6,7 +6,6 @@
         // static Players player = new Players() 
         
         public Players player = new Players();
-        public List<string> center = new List<string>();
         public List<Players> players = new List<Players>();
         static Random random = new Random();
         public int ChooseStartingPlayer()
@@ -91,49 +90,49 @@
                 }
             }
         }
-        public string PlaceFirstCardInCenter(List<string> center)
+        public List<string> PlaceFirstCardInCenter()
         {
             int randomCard = random.Next(player.Deck.Count);
             string selectedCard = player.Deck[randomCard];
             player.Deck.RemoveAt(randomCard);
-            center.Add(selectedCard);
+            player.Center.Add(selectedCard);
 
-            return selectedCard;
+            return player.Center;
         }
-        public string DrawCard(List<string> center)
+        public string DrawCard()
         {
             if (player.Deck.Count == 0)
             {
-                if (center.Count > 1)
+                if (player.Center.Count > 1)
                 {
                     ShuffleDeck();
                     Console.WriteLine("Stapel ist Leer wird neu gemischt...");
                     Thread.Sleep(2000);
-                    Console.WriteLine(center[0]);
+                    Console.WriteLine(player.Center[0]);
                 
-                    int number = center.Count;
-                    string first = center[0];
+                    int number = player.Center.Count;
+                    string first = player.Center[0];
                     while (number > 1)
                     {
                         number--;
                         int carde = random.Next(number + 1);
-                        string value = center[carde];
-                        center[carde] = center[number];
-                        center[number] = value;
+                        string value = player.Center[carde];
+                        player.Center[carde] = player.Center[number];
+                        player.Center[number] = value;
                     }
                     int i = 1;
-                    while (i < center.Count)
+                    while (i < player.Center.Count)
                     {
-                        player.Deck.Add(center[i]);
+                        player.Deck.Add(player.Center[i]);
                         i++;
                     }
-                    center.Clear();
-                    center.Add(first);
+                    player.Center.Clear();
+                    player.Center.Add(first);
                 
                     i = 0;
-                    while (i < center.Count)
+                    while (i < player.Center.Count)
                     {
-                        Console.WriteLine(center[i]);
+                        Console.WriteLine(player.Center[i]);
                         i++;
                     }
                 }
@@ -149,9 +148,9 @@
             player.Deck.RemoveAt(0);
             return card;
         }
-        public bool IsCardPlayable(string selectedCard, List<string> center)
+        public bool IsCardPlayable(string selectedCard)
         {
-            if (center.Count == 0)
+            if (player.Center.Count == 0)
             {
                 return true;
             }
@@ -165,7 +164,7 @@
             string selectedColor = selectedCardParts[0];
             string selectedValue = selectedCardParts[1];
 
-            string centerCard = center.LastOrDefault();
+            string centerCard = player.Center.LastOrDefault();
             if (centerCard == null)
             {
                 return false;

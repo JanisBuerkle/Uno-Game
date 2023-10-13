@@ -6,7 +6,7 @@
         {
             List<Players> players = new List<Players>{};
             UnoModel model = new UnoModel();
-            UnoView view = new UnoView();
+            UnoView view = new UnoView(model);
             UnoController controller = new UnoController(model, view);
 
             controller.Run();
