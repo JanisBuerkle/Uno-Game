@@ -1,4 +1,6 @@
-﻿namespace Uno_Game
+﻿using System.Xml;
+
+namespace Uno_Game
 {
     public class UnoView
     {
@@ -24,7 +26,7 @@
                 Console.WriteLine("Mit wie vielen Spielern wollt ihr spielen? (2-5)");
                 string CountOfPlayersEingabe = Console.ReadLine();
                 int CountOfPlayersConvert;
-                if (int.TryParse(CountOfPlayersEingabe, out CountOfPlayersConvert))
+                if (int.TryParse(CountOfPlayersEingabe, out CountOfPlayersConvert) && CountOfPlayersConvert >= 2 && CountOfPlayersConvert <= 5)
                 {
                     model.player.CountOfPlayers = CountOfPlayersConvert;
                     Console.WriteLine("Anzahl der Spieler: " + model.player.CountOfPlayers);
@@ -59,7 +61,7 @@
                         {
                             success = false;
                             addName = false;
-                        } 
+                        }
                         else
                         {
                             model.players.Add(new Players() { Name = player });
@@ -86,14 +88,14 @@
 
                     if (addName)
                     {
-                        model.players.Add(new Players() {Name = player});
+                        model.players.Add(new Players() { Name = player });
                         success = true;
                     }
                     else
                     {
                         if (noError)
                         {
-                            
+
                         }
                         else
                         {
@@ -103,17 +105,6 @@
                         }
                     }
                 }
-
-                
-                // else if (players.Contains(new Players() { Name = player }))
-                // {
-                //     Console.WriteLine("Ihr könnt nicht zweimal den selben Namen nehmen!");
-                // }
-                // else
-                // {
-                //     model.players.Add(new Players() { Name = player });
-                // }
-
             }
 
             return model.player.CountOfPlayers;
@@ -160,6 +151,40 @@
 
         public void PlayerDisplay()
         {
+
+            
+            int FirstCardShow = model.player.Center.Count;
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.Write("Der letzte Spieler hat ");
+            if (model.player.Draw)
+            {
+                Console.WriteLine("eine Karte gezogen.");
+                model.player.Draw = false;
+            }
+            else
+            {
+                ConsoleColor consoleColor;
+                string played = model.player.Center[FirstCardShow - 1];
+                string[] cardColor = played.Split(' ');
+
+                if (Enum.TryParse(cardColor[0], true, out consoleColor))
+                {
+
+                    Console.Write("eine Karte gespielt: ");
+                    Console.ForegroundColor = consoleColor;
+                    Console.WriteLine(played);
+                    Console.ResetColor();
+                }
+                else if (played.Contains("Wild") || played.Contains("Draw 4"))
+                {
+                    Console.Write("eine Karte gespielt: ");
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.WriteLine(played);
+                    Console.ResetColor();
+                }
+            }
+            Console.ResetColor();
+            
             Console.Write("Nächster Spieler: ");
             Console.ForegroundColor = ConsoleColor.Cyan;
             if (model.player.Richtung == 0)
@@ -231,6 +256,7 @@
 
             if (string.IsNullOrWhiteSpace(input))
             {
+                model.player.Draw = true;
                 string drawnCard = model.DrawCard();
                 model.players[model.player.Player].Hand.Add(drawnCard);
 
@@ -300,9 +326,7 @@
                                 {
                                     string drawnCard = model.DrawCard();
                                     model.players[nextPlayerIndex].Hand.Add(drawnCard);
-                                    Console.WriteLine(model.players[nextPlayerIndex].Name +
-                                                      " hat eine Karte gezogen: " +
-                                                      drawnCard);
+                                    // Console.WriteLine(model.players[nextPlayerIndex].Name + " hat eine Karte gezogen: " + drawnCard);
                                     model.player.validCardPlayed = true;
                                 }
                             }
@@ -360,6 +384,8 @@
                         if (model.IsWildcard(selectedCard))
                         {
                             string cards = selectedCard;
+                            while (!model.player.validCardPlayed)
+                            {
                             Console.WriteLine("Welche Farbe möchtest du wählen (Red, Green, Blue, Yellow)?");
                             string colorInput = Console.ReadLine();
                             string chosenColor = "";
@@ -379,18 +405,24 @@
                                     break;
                             }
 
-                            if (model.IsValidColor(chosenColor) && cards.Contains("Draw 4"))
-                            {
-                                selectedCard = chosenColor + " " + "+4";
+
+                                if (model.IsValidColor(chosenColor) && cards.Contains("Draw 4"))
+                                {
+                                    selectedCard = chosenColor + " " + "+4";
+                                    model.player.validCardPlayed = true;
+                                }
+                                else if (model.IsValidColor(chosenColor))
+                                {
+                                    selectedCard = chosenColor + " " + "Wild";
+                                    model.player.validCardPlayed = true;
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Ungültige Farbwahl. Die Karte wurde nicht gespielt.");
+                                    model.player.validCardPlayed = false;
+                                }
                             }
-                            else if (model.IsValidColor(chosenColor))
-                            {
-                                selectedCard = chosenColor + " " + "Wild";
-                            }
-                            else
-                            {
-                                Console.WriteLine("Ungültige Farbwahl. Die Karte wurde nicht gespielt.");
-                            }
+                            
 
                             if (cards.Contains("Draw 4"))
                             {
@@ -418,17 +450,15 @@
                                     {
                                         string drawnCard = model.DrawCard();
                                         model.players[nextPlayerIndex].Hand.Add(drawnCard);
-                                        Console.WriteLine(model.players[nextPlayerIndex].Name +
-                                                          " hat eine Karte gezogen: " + drawnCard);
+                                        // Console.WriteLine(model.players[nextPlayerIndex].Name + " hat eine Karte gezogen: " + drawnCard);
                                         model.player.validCardPlayed = true;
                                     }
                                 }
-
-                                Enter();
                             }
                         }
 
                         model.player.Center.Add(selectedCard);
+                        
                         model.players[model.player.PlayerSave].Hand.RemoveAt(cardIndex);
                         Console.WriteLine(model.players[model.player.PlayerSave].Name + " hat " + selectedCard + " gespielt.");
                         model.player.validCardPlayed = true;

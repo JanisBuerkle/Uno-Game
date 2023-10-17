@@ -12,6 +12,7 @@
     public List<string> Center { get; set; }
     public int StartingPlayer { get; set; }
     public bool validCardPlayed { get; set; }
+    public bool Draw { get; set; }
     public Players()
     {
         Hand = new List<string>();

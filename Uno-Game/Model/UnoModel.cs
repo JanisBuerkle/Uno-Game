@@ -109,31 +109,33 @@
                     Console.WriteLine("Stapel ist Leer wird neu gemischt...");
                     Thread.Sleep(2000);
                     Console.WriteLine(player.Center[0]);
-                
+
                     int number = player.Center.Count;
                     string first = player.Center[0];
                     while (number > 1)
                     {
                         number--;
-                        int carde = random.Next(number + 1);
-                        string value = player.Center[carde];
-                        player.Center[carde] = player.Center[number];
+                        int cardIndex = random.Next(number + 1);
+                        string value = player.Center[cardIndex];
+                        player.Center[cardIndex] = player.Center[number];
                         player.Center[number] = value;
                     }
-                    int i = 1;
-                    while (i < player.Center.Count)
+
+                    for (int i = 0; i < player.Center.Count; i++)
                     {
+                        if (player.Center[i].Contains("+4"))
+                        {
+                            player.Center[i] = "Draw 4";
+                        }
                         player.Deck.Add(player.Center[i]);
-                        i++;
                     }
+
                     player.Center.Clear();
                     player.Center.Add(first);
-                
-                    i = 0;
-                    while (i < player.Center.Count)
+
+                    for (int i = 0; i < player.Center.Count; i++)
                     {
                         Console.WriteLine(player.Center[i]);
-                        i++;
                     }
                 }
                 else
@@ -144,6 +146,8 @@
                     return testen;
                 }
             }
+
+
             var card = player.Deck.First();
             player.Deck.RemoveAt(0);
             return card;

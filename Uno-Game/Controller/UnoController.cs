@@ -32,7 +32,7 @@
             }
 
             model.player.Center = model.PlaceFirstCardInCenter();
-            Console.WriteLine(model.player.Center.Count);
+            // Console.WriteLine(model.player.Center.Count);
             
             while (true)
             {
