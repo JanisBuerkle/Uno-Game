@@ -497,7 +497,7 @@ namespace Uno_Game
         
         
         
-        public void Enter()
+        private void Enter()
         {
             Console.ForegroundColor = ConsoleColor.DarkGray;
             Console.Write("Drücke ");
@@ -509,7 +509,6 @@ namespace Uno_Game
             Console.ReadLine();
             Console.Clear();
         }
-
         void Rules()
         {
             Console.Clear();

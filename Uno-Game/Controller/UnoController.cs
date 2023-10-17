@@ -36,6 +36,7 @@
             
             while (true)
             {
+                // Richtung normal
                 if (model.player.Richtung == 0)
                 {
                     model.player.Player = model.player.StartingPlayer;
@@ -60,6 +61,7 @@
                     }
                     model.player.StartingPlayer = 0;
                 }
+                // Richtung rückwärts
                 else if (model.player.Richtung == 1)
                 {
                     model.player.Player = model.player.StartingPlayer;
@@ -83,6 +85,11 @@
                         }
                     }
                     model.player.StartingPlayer = model.player.CountOfPlayers - 1;
+                }
+
+                if (model.player.Hand.Count <= 0)
+                {
+                    Console.WriteLine("Ende");
                 }
             }
         }
